@@ -9,10 +9,15 @@ import {
   CheckCircle2,
   MapPin,
   BarChart3,
-  LineChart as LineIcon,
   Send,
   MessageSquare,
+  Clock,
+  ArrowRight,
+  Check,
+  PackageCheck,
+  RefreshCw,
 } from 'lucide-react';
+import { useAutoRefresh } from '@/components/useAutoRefresh';
 import {
   ResponsiveContainer,
   BarChart,
@@ -72,6 +77,11 @@ export default function SupplierPortal() {
   const [forecastData, setForecastData] = useState<{ commodity: string; current: number; forecast: number }[]>([]);
   const [aiSummary, setAiSummary] = useState<string>('');
 
+  // Supply Chain Approval Pipeline State
+  const [supplyOrders, setSupplyOrders] = useState<any[]>([]);
+  const [advancingId, setAdvancingId] = useState<string | null>(null);
+  const [orderActionMsg, setOrderActionMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
   const fetchDeliveries = async () => {
     try {
       const res = await fetch('/api/deliveries');
@@ -79,6 +89,54 @@ export default function SupplierPortal() {
       setDeliveries(Array.isArray(data.deliveries) ? data.deliveries : []);
     } catch {
       setDeliveries([]);
+    }
+  };
+
+  const fetchSupplyOrders = async () => {
+    try {
+      const res = await fetch('/api/supply-orders');
+      const data = await res.json();
+      setSupplyOrders(Array.isArray(data.orders) ? data.orders : []);
+    } catch {
+      setSupplyOrders([]);
+    }
+  };
+
+  const advanceOrder = async (orderId: string, action: 'supplier_approve' | 'mark_in_transit') => {
+    setAdvancingId(orderId);
+    setOrderActionMsg(null);
+    try {
+      const res = await fetch('/api/supply-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          id: orderId,
+          actor: 'Taluk Supply Officer (Ernakulam Central Godown)',
+          note:
+            action === 'supplier_approve'
+              ? 'Consignment allocation approved at godown bay 3'
+              : 'Dispatched via Kerala State Civil Supplies lorry KL-07-CD-4102',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setOrderActionMsg({
+          text:
+            action === 'supplier_approve'
+              ? `Directive ${orderId} approved! Godown allocation staged.`
+              : `Consignment ${orderId} marked IN TRANSIT to shopkeeper.`,
+          ok: true,
+        });
+        fetchSupplyOrders();
+      } else {
+        setOrderActionMsg({ text: data.error ?? 'Action failed', ok: false });
+      }
+    } catch (e: any) {
+      setOrderActionMsg({ text: e.message, ok: false });
+    } finally {
+      setAdvancingId(null);
+      setTimeout(() => setOrderActionMsg(null), 5000);
     }
   };
 
@@ -91,6 +149,22 @@ export default function SupplierPortal() {
       setForecastData([]);
     }
   };
+
+  useAutoRefresh(() => {
+    fetchDeliveries();
+    fetchForecast();
+    fetchSupplyOrders();
+  }, 15000);
+
+  useEffect(() => {
+    fetchDeliveries();
+    fetchForecast();
+    fetchSupplyOrders();
+  }, []);
+
+  useEffect(() => {
+    runOptimization();
+  }, [selectedTaluk]);
 
   const runOptimization = async () => {
     setLoadingOpt(true);
@@ -128,10 +202,10 @@ export default function SupplierPortal() {
 
       // Plain-language AI summary
       if (vectors.length > 0) {
-        const critical = vectors.filter((v) => v.urgency === 'CRITICAL').length;
+        const critical = vectors.filter((v: any) => v.urgency === 'CRITICAL').length;
         setAiSummary(
           critical > 0
-            ? `Arizon AI Agent: ${critical} taluk${critical === 1 ? '' : 's'} flagged CRITICAL — focus next dispatch on ${vectors.find((v) => v.urgency === 'CRITICAL')?.commodity_name ?? 'grain'}. Total recommended immediate dispatch: ${total} kg.`
+            ? `Arizon AI Agent: ${critical} taluk${critical === 1 ? '' : 's'} flagged CRITICAL — focus next dispatch on ${vectors.find((v: any) => v.urgency === 'CRITICAL')?.commodity_name ?? 'grain'}. Total recommended immediate dispatch: ${total} kg.`
             : `Arizon AI Agent: All taluks within normal parameters. Maintain scheduled dispatch cadence.`,
         );
       } else {
@@ -143,15 +217,6 @@ export default function SupplierPortal() {
       setLoadingOpt(false);
     }
   };
-
-  useEffect(() => {
-    fetchDeliveries();
-    fetchForecast();
-  }, []);
-
-  useEffect(() => {
-    runOptimization();
-  }, [selectedTaluk]);
 
   // Build a simple 3-month projection line chart for the top commodity
   const projectionLine = forecastData.slice(0, 3).map((f) => ({
@@ -289,14 +354,122 @@ export default function SupplierPortal() {
               </div>
             </TabSection>
 
-            {/* Dispatch schedule */}
+            {/* Dispatch schedule & 3-Tier Supply Approval */}
             <TabSection id="dispatch">
-              <div className="surface p-5 sm:p-6 space-y-4">
+              <div className="surface p-5 sm:p-6 space-y-5">
                 <div className="flex items-center justify-between pb-3 border-b border-[var(--rule)]">
                   <div className="flex items-center gap-2">
                     <Truck className="w-5 h-5 text-[var(--authority)]" />
-                    <h2 className="font-serif font-bold text-lg text-[var(--ink)]">{t.dispatch_schedule}</h2>
+                    <div>
+                      <h2 className="font-serif font-bold text-lg text-[var(--ink)]">
+                        {lang === 'ml' ? 'സപ്ലൈ ചെയിൻ അംഗീകാരവും ഡിസ്പാച്ചും' : 'Supply Chain Approvals & Godown Dispatch'}
+                      </h2>
+                      <p className="text-xs text-[var(--ink-soft)]">
+                        Tier 2: Review Government allocation directives, stage warehouse inventory, and mark in transit.
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    onClick={fetchSupplyOrders}
+                    className="text-xs text-[var(--authority)] hover:underline flex items-center gap-1 font-semibold"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> {t.refresh}
+                  </button>
+                </div>
+
+                {/* Action Feedback Banner */}
+                {orderActionMsg && (
+                  <div
+                    className={`p-3 rounded-lg text-xs font-bold flex items-center gap-2 border ${
+                      orderActionMsg.ok
+                        ? 'bg-[#E6F0DD] text-[var(--success)] border-[#B7CFB7]'
+                        : 'bg-[#F1D9CF] text-[var(--danger)] border-[#D89F8B]'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{orderActionMsg.text}</span>
+                  </div>
+                )}
+
+                {/* State Directives Pending Supplier Action */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                      {lang === 'ml' ? 'സംസ്ഥാന തല നിർദ്ദേശങ്ങൾ' : 'Directives Requiring Godown Action'}
+                    </h3>
+                    <span className="text-[11px] font-mono text-[var(--ink-soft)]">
+                      {supplyOrders.filter((o) => o.status === 'gov_directive' || o.status === 'supplier_approved').length} pending
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {supplyOrders.filter((o) => o.status === 'gov_directive' || o.status === 'supplier_approved' || o.status === 'in_transit').length === 0 ? (
+                      <div className="p-4 rounded-lg bg-[var(--canvas)] border border-[var(--rule)] text-center text-xs text-[var(--ink-soft)]">
+                        No active directives in queue. All consignments are received or completed.
+                      </div>
+                    ) : (
+                      supplyOrders
+                        .filter((o) => o.status === 'gov_directive' || o.status === 'supplier_approved' || o.status === 'in_transit')
+                        .map((order) => (
+                          <div
+                            key={order.id}
+                            className="p-4 rounded-xl bg-[var(--canvas)] border border-[var(--rule)] flex flex-col md:flex-row md:items-center justify-between gap-3 text-sm"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs font-bold text-[var(--ink)]">{order.id}</span>
+                                <span className="font-bold text-[var(--ink)]">→ {order.shop_name ?? order.shop_id}</span>
+                                <span className="text-xs px-2 py-0.5 rounded bg-white border border-[var(--rule)] font-semibold text-[var(--authority)]">
+                                  {order.commodity_name ?? order.commodity_id}
+                                </span>
+                              </div>
+                              <div className="text-xs text-[var(--ink-soft)] flex items-center gap-3">
+                                <span>Allocation: <strong className="text-[var(--ink)]">{order.allocated_qty} kg</strong></span>
+                                <span>Period: <strong>{order.period}</strong></span>
+                                {order.rationale && <span className="italic">&quot;{order.rationale}&quot;</span>}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              {order.status === 'gov_directive' && (
+                                <button
+                                  onClick={() => advanceOrder(order.id, 'supplier_approve')}
+                                  disabled={advancingId === order.id}
+                                  className="btn-primary text-xs flex items-center gap-1.5 py-1.5 px-3"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                  {advancingId === order.id ? 'Approving…' : 'Approve Allocation'}
+                                </button>
+                              )}
+
+                              {order.status === 'supplier_approved' && (
+                                <button
+                                  onClick={() => advanceOrder(order.id, 'mark_in_transit')}
+                                  disabled={advancingId === order.id}
+                                  className="btn-secondary text-xs flex items-center gap-1.5 py-1.5 px-3 bg-purple-50 text-purple-900 border-purple-300 hover:bg-purple-100"
+                                >
+                                  <Truck className="w-3.5 h-3.5 text-purple-700" />
+                                  {advancingId === order.id ? 'Dispatching…' : 'Mark In Transit'}
+                                </button>
+                              )}
+
+                              {order.status === 'in_transit' && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-900 border border-purple-300">
+                                  <Truck className="w-3 h-3 animate-bounce text-purple-700" />
+                                  En Route to Dealer
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-[var(--rule)] flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                    {lang === 'ml' ? 'മുൻകാല ഡിസ്പാച്ച് രേഖകൾ' : 'Historical Consignment Deliveries (Electronic Scale Records)'}
+                  </h3>
                   <span className="text-xs text-[var(--ink-soft)]">
                     {lang === 'ml' ? 'വ്യത്യാസ പരിധി' : 'Variance threshold'}: 5.0%
                   </span>
