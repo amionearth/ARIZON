@@ -1,0 +1,255 @@
+@import "tailwindcss";
+
+/* -------------------------------------------------------------------------
+ * Arizon — Kerala PDS design tokens
+ * Warm cream paper, paddy-green authority, turmeric-gold accent.
+ * Tuned for elderly rural users on mid-range Android phones in daylight.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  --canvas: #FBF6EA;            /* unbleached rice-paper cream */
+  --canvas-deep: #F3EBD6;       /* slightly darker for section rules */
+  --surface: #FFFFFF;           /* cards, panels */
+  --ink: #241C10;               /* primary text — warm near-black */
+  --ink-soft: #6B5D45;          /* captions, helper text */
+  --ink-faint: #8E7E62;         /* tertiary text — minimum contrast still >= 7:1 vs canvas */
+  --rule: #E4D9C0;              /* 1px borders */
+  --rule-strong: #C9B994;      /* emphasis borders */
+
+  --accent: #C98A2B;            /* turmeric gold — primary CTA */
+  --accent-deep: #A56B14;       /* gold hover */
+  --authority: #2F5233;         /* paddy green — official headers */
+  --authority-deep: #234027;
+
+  --success: #4C7A3D;           /* leaf green — verified */
+  --warn: #B8860B;              /* harvest amber — low stock */
+  --danger: #B3462C;            /* terracotta — flagged */
+
+  --font-serif: var(--font-noto-serif), var(--font-noto-serif-malayalam), Georgia, serif;
+  --font-sans: var(--font-noto-sans), var(--font-noto-sans-malayalam), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--canvas);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-noto-sans), ui-monospace, SFMono-Regular, monospace;
+}
+
+* {
+  border-color: var(--rule);
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Larger tap targets on touch devices */
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  /* Base 18px — brief requires citizen-readable sizing on /login & /customer */
+  font-size: 18px;
+  line-height: 1.6;
+  font-feature-settings: "kern" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular numerals for ledgers, bills, and any data table */
+.tabular-nums,
+table,
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Headings — serif, tighter line-height, more presence */
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Reusable utility classes mirroring the brief */
+@layer components {
+
+  /* Bordered card surface — replaces translucent glass panels */
+  .surface {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+  }
+
+  .surface-strong {
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 14px;
+  }
+
+  /* Authority header (used on letterhead, banner, official labels) */
+  .authority-strip {
+    border-top: 2px solid var(--authority);
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--canvas) 100%);
+  }
+
+  /* Eyebrow label (no pill — flat caps style) */
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--authority);
+  }
+
+  /* Primary CTA — turmeric gold, large tap target, no glow */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 12px 22px;
+    background: var(--accent);
+    color: #FFFFFF;
+    font-weight: 600;
+    border-radius: 10px;
+    border: 1px solid var(--accent-deep);
+    transition: background 180ms ease, transform 120ms ease;
+  }
+  .btn-primary:hover { background: var(--accent-deep); }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-primary:focus-visible {
+    outline: 3px solid #F5D58A;
+    outline-offset: 2px;
+  }
+
+  /* Secondary CTA */
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 12px 22px;
+    background: var(--surface);
+    color: var(--authority);
+    font-weight: 600;
+    border-radius: 10px;
+    border: 1px solid var(--authority);
+    transition: background 180ms ease, color 180ms ease;
+  }
+  .btn-secondary:hover { background: var(--authority); color: #FFFFFF; }
+  .btn-secondary:focus-visible {
+    outline: 3px solid #B7CFB9;
+    outline-offset: 2px;
+  }
+
+  /* Ghost / link button */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--ink);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: background 180ms ease;
+  }
+  .btn-ghost:hover { background: var(--canvas-deep); }
+
+  /* Form input — large, clear border, focus ring */
+  .input {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 10px;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    color: var(--ink);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--authority);
+    box-shadow: 0 0 0 3px #B7CFB9;
+  }
+  .input::placeholder { color: var(--ink-faint); }
+
+  /* Stock badge palette — leaf / amber / terracotta */
+  .badge-in-stock {
+    background: #E6F0DD;
+    color: var(--success);
+    border: 1px solid #B7CFB7;
+  }
+  .badge-low-stock {
+    background: #F4E9D0;
+    color: var(--warn);
+    border: 1px solid #D9C28E;
+  }
+  .badge-out-stock {
+    background: #F1D9CF;
+    color: var(--danger);
+    border: 1px solid #D89F8B;
+  }
+
+  /* Ration bill dotted-row separator */
+  .bill-row {
+    border-bottom: 1px dashed var(--rule-strong);
+  }
+  .bill-row:last-child {
+    border-bottom: none;
+  }
+
+  /* Section rule used between major blocks */
+  .section-rule {
+    border-top: 1px solid var(--rule);
+  }
+
+  /* Page background — warm paper with subtle grain */
+  .page-canvas {
+    background-color: var(--canvas);
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(201,138,43,0.04) 0%, transparent 25%),
+      radial-gradient(circle at 90% 100%, rgba(47,82,51,0.04) 0%, transparent 30%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.141 0 0 0 0 0.114 0 0 0 0 0.063 0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+}
+
+/* Hide scrollbar for the horizontal tab bar while keeping scroll behaviour */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; }
+
+/* Bottom-tab safe area on mobile */
+@supports (padding: max(0px)) {
+  .safe-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Focus visibility — always visible for keyboard users */
+*:focus-visible {
+  outline: 3px solid #B7CFB9;
+  outline-offset: 2px;
+}
+button:focus-visible,
+a:focus-visible {
+  outline-color: #C98A2B;
+}
