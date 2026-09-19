@@ -23,6 +23,7 @@ import { Navbar } from '@/components/Navbar';
 import { StockBadge } from '@/components/StockBadge';
 import { AgentChat } from '@/components/AgentChat';
 import MobileTabBar, { TabSection } from '@/components/MobileTabBar';
+import { useAutoRefresh } from '@/components/useAutoRefresh';
 import { Language, makeT } from '@/lib/translations';
 import { getSessionCardId, logout } from '@/app/actions/auth';
 import { recordUnfulfilledRequest } from '@/app/actions/notify';
@@ -199,6 +200,11 @@ export default function CustomerPortal() {
   useEffect(() => {
     fetchContext();
   }, [demoCard.id]);
+
+  useAutoRefresh(() => {
+    fetchNearby();
+    fetchContext();
+  }, 15000);
 
   const handleLocalityChange = (loc: string, newLat: number, newLon: number) => {
     setSelectedLocality(loc);

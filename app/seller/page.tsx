@@ -19,7 +19,12 @@ import {
   ScrollText,
   ShoppingBag,
   MessageSquare,
+  Truck,
+  Check,
+  ShieldCheck,
 } from 'lucide-react';
+import { EditableCell } from '@/components/EditableCell';
+import { useAutoRefresh } from '@/components/useAutoRefresh';
 import { Navbar } from '@/components/Navbar';
 import { StockBadge } from '@/components/StockBadge';
 import { AgentChat } from '@/components/AgentChat';
@@ -115,6 +120,11 @@ export default function SellerPortal() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
+  // 3-Tier Consignment Supply Orders State
+  const [shopSupplyOrders, setShopSupplyOrders] = useState<any[]>([]);
+  const [orderActionBusy, setOrderActionBusy] = useState<string | null>(null);
+  const [sellerOrderMsg, setSellerOrderMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
   const fetchStock = async () => {
     setLoading(true);
     try {
@@ -129,8 +139,62 @@ export default function SellerPortal() {
     }
   };
 
+  const fetchShopSupplyOrders = async (shopId: string) => {
+    try {
+      const res = await fetch(`/api/supply-orders?shop_id=${encodeURIComponent(shopId)}`);
+      const data = await res.json();
+      setShopSupplyOrders(Array.isArray(data.orders) ? data.orders : []);
+    } catch {
+      setShopSupplyOrders([]);
+    }
+  };
+
+  const handleAdvanceShopOrder = async (orderId: string, action: 'shop_receive' | 'staff_approve') => {
+    setOrderActionBusy(orderId);
+    setSellerOrderMsg(null);
+    try {
+      const isReceive = action === 'shop_receive';
+      const res = await fetch('/api/supply-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          id: orderId,
+          actor: isReceive ? `FPS Dealer (${selectedShopId})` : 'Civil Supplies On-Site Inspector',
+          note: isReceive
+            ? 'Physical gross weight matched on e-Balance scale'
+            : 'Departmental physical ledger sign-off & biometric counter-signature complete',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSellerOrderMsg({
+          text: isReceive
+            ? `Consignment ${orderId} received & weighed at scale! Awaiting on-site inspector final sign-off.`
+            : `Consignment ${orderId} officially approved by Inspector! Ledger balance permanently updated.`,
+          ok: true,
+        });
+        fetchStock();
+        fetchShopSupplyOrders(selectedShopId);
+      } else {
+        setSellerOrderMsg({ text: data.error ?? 'Action failed', ok: false });
+      }
+    } catch (e: any) {
+      setSellerOrderMsg({ text: e.message, ok: false });
+    } finally {
+      setOrderActionBusy(null);
+      setTimeout(() => setSellerOrderMsg(null), 5000);
+    }
+  };
+
+  useAutoRefresh(() => {
+    fetchStock();
+    fetchShopSupplyOrders(selectedShopId);
+  }, 10000);
+
   useEffect(() => {
     fetchStock();
+    fetchShopSupplyOrders(selectedShopId);
   }, [selectedShopId]);
 
   const handleGoodsReceived = async (e: React.FormEvent) => {
@@ -345,16 +409,48 @@ export default function SellerPortal() {
                           <tr key={item.commodity_id} className="hover:bg-[var(--canvas)]">
                             <td className="py-3 px-4 font-bold text-[var(--ink)]">{item.commodity_name}</td>
                             <td className="py-3 px-3 text-right text-[var(--ink-soft)]">
-                              {item.opening} {item.unit}
+                              <EditableCell
+                                shop_id={selectedShopId}
+                                commodity_id={item.commodity_id}
+                                period="2026-09"
+                                field="opening"
+                                value={item.opening}
+                                unit={item.unit}
+                                onSaved={() => fetchStock()}
+                              />
                             </td>
                             <td className="py-3 px-3 text-right text-[var(--success)] font-semibold">
-                              +{item.received} {item.unit}
+                              <EditableCell
+                                shop_id={selectedShopId}
+                                commodity_id={item.commodity_id}
+                                period="2026-09"
+                                field="received"
+                                value={item.received}
+                                unit={item.unit}
+                                onSaved={() => fetchStock()}
+                              />
                             </td>
                             <td className="py-3 px-3 text-right text-[var(--danger)] font-semibold">
-                              −{item.sold} {item.unit}
+                              <EditableCell
+                                shop_id={selectedShopId}
+                                commodity_id={item.commodity_id}
+                                period="2026-09"
+                                field="sold"
+                                value={item.sold}
+                                unit={item.unit}
+                                onSaved={() => fetchStock()}
+                              />
                             </td>
                             <td className="py-3 px-3 text-right text-[var(--ink)] font-bold">
-                              {item.closing} {item.unit}
+                              <EditableCell
+                                shop_id={selectedShopId}
+                                commodity_id={item.commodity_id}
+                                period="2026-09"
+                                field="closing"
+                                value={item.closing}
+                                unit={item.unit}
+                                onSaved={() => fetchStock()}
+                              />
                             </td>
                             <td className="py-3 px-3">
                               <StockBadge status={item.status} lang={lang} size="sm" />
@@ -380,17 +476,135 @@ export default function SellerPortal() {
               </div>
             </TabSection>
 
-            {/* Goods Received */}
+            {/* Goods Received & 3-Tier Consignment Verification */}
             <TabSection id="goods">
-              <div className="surface p-5 sm:p-6 space-y-4">
-                <div className="flex items-center gap-2 pb-3 border-b border-[var(--rule)]">
-                  <Scale className="w-5 h-5 text-[var(--authority)]" />
-                  <div>
-                    <h2 className="font-serif font-bold text-lg text-[var(--ink)]">
-                      {t.goods_received_title}
-                    </h2>
-                    <p className="text-sm text-[var(--ink-soft)]">{t.goods_received_desc}</p>
+              <div className="surface p-5 sm:p-6 space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-[var(--rule)]">
+                  <div className="flex items-center gap-2">
+                    <Scale className="w-5 h-5 text-[var(--authority)]" />
+                    <div>
+                      <h2 className="font-serif font-bold text-lg text-[var(--ink)]">
+                        {lang === 'ml' ? 'ചരക്ക് വരവ് & 3-ഘട്ട പരിശോധന' : 'Consignment Deliveries & 3-Tier Scale Verification'}
+                      </h2>
+                      <p className="text-sm text-[var(--ink-soft)]">
+                        Verify transit consignments via e-Balance digital scale and record official departmental staff sign-off.
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => {
+                      fetchStock();
+                      fetchShopSupplyOrders(selectedShopId);
+                    }}
+                    className="text-xs text-[var(--authority)] hover:underline flex items-center gap-1 font-semibold"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> {t.refresh}
+                  </button>
+                </div>
+
+                {/* Feedback message */}
+                {sellerOrderMsg && (
+                  <div
+                    className={`p-3 rounded-lg text-xs font-bold flex items-center gap-2 border ${
+                      sellerOrderMsg.ok
+                        ? 'bg-[#E6F0DD] text-[var(--success)] border-[#B7CFB7]'
+                        : 'bg-[#F1D9CF] text-[var(--danger)] border-[#D89F8B]'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{sellerOrderMsg.text}</span>
+                  </div>
+                )}
+
+                {/* Active Consignments Awaiting Shopkeeper / Staff Sign-Off */}
+                <div className="p-4 rounded-xl bg-[var(--canvas)] border border-[var(--rule)] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] flex items-center gap-1.5">
+                      <Truck className="w-4 h-4 text-[var(--authority)]" />
+                      {lang === 'ml' ? 'ഈ കടയിലേക്കുള്ള സപ്ലൈ കൺസൈൻമെന്റുകൾ' : 'Consignments Assigned to This Shop'}
+                    </h3>
+                    <span className="text-[11px] font-mono text-[var(--ink-soft)]">
+                      {shopSupplyOrders.length} records
+                    </span>
+                  </div>
+
+                  {shopSupplyOrders.length === 0 ? (
+                    <div className="text-xs text-[var(--ink-soft)] text-center py-4 bg-white rounded-lg border border-[var(--rule)]">
+                      No state consignments active for {selectedShopId}. Issue one from the Government portal to test 3-tier delivery.
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {shopSupplyOrders.map((order) => (
+                        <div
+                          key={order.id}
+                          className="p-3.5 rounded-lg bg-white border border-[var(--rule)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm"
+                        >
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-bold text-[var(--ink)]">{order.id}</span>
+                              <span className="font-bold text-[var(--authority)]">{order.commodity_name ?? order.commodity_id}</span>
+                              <span className="font-black text-sm tabular-nums text-[var(--ink)]">
+                                {order.allocated_qty} kg
+                              </span>
+                            </div>
+                            <div className="text-xs text-[var(--ink-soft)] mt-0.5 flex items-center gap-2">
+                              <span>Period: {order.period}</span>
+                              {order.rationale && <span>· &ldquo;{order.rationale}&rdquo;</span>}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {order.status === 'in_transit' && (
+                              <button
+                                onClick={() => handleAdvanceShopOrder(order.id, 'shop_receive')}
+                                disabled={orderActionBusy === order.id}
+                                className="btn-primary text-xs flex items-center gap-1.5 py-1.5 px-3"
+                              >
+                                <Scale className="w-3.5 h-3.5" />
+                                {orderActionBusy === order.id ? 'Weighing…' : 'Weigh & Receive (Scale)'}
+                              </button>
+                            )}
+
+                            {order.status === 'shop_received' && (
+                              <button
+                                onClick={() => handleAdvanceShopOrder(order.id, 'staff_approve')}
+                                disabled={orderActionBusy === order.id}
+                                className="btn-secondary text-xs flex items-center gap-1.5 py-1.5 px-3 bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100"
+                              >
+                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                                {orderActionBusy === order.id ? 'Signing…' : 'Staff Final Sign-Off'}
+                              </button>
+                            )}
+
+                            {order.status === 'staff_approved' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[#E6F0DD] text-[var(--success)] border border-[#B7CFB7]">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Verified & Locked in Ledger
+                              </span>
+                            )}
+
+                            {order.status === 'gov_directive' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                                Awaiting TSO Godown Dispatch
+                              </span>
+                            )}
+
+                            {order.status === 'supplier_approved' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-900 border border-blue-300">
+                                Staged at Godown
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-[var(--rule)]">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)] mb-2">
+                    {lang === 'ml' ? 'നേരിട്ടുള്ള റസീപ്റ്റ് രേഖപ്പെടുത്തൽ' : 'Direct Scale Receipt Simulator (Ad-Hoc Consignment)'}
+                  </h3>
                 </div>
 
                 <form onSubmit={handleGoodsReceived} className="space-y-4">

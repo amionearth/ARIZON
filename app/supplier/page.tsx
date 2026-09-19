@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   MapPin,
   BarChart3,
+  LineChart as LineIcon,
   Send,
   MessageSquare,
   Clock,

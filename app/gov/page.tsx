@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { AI_PROVIDER_PRESETS } from '@/lib/ai-control';
 import {
   Landmark,
   Scale,
@@ -25,6 +26,7 @@ import {
   Plus,
   ArrowRight,
   CornerDownRight,
+  Activity,
 } from 'lucide-react';
 import { useAutoRefresh } from '@/components/useAutoRefresh';
 import {
@@ -131,17 +133,29 @@ export default function GovernmentPortal() {
   const [directiveMsg, setDirectiveMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
   // AI API Control Panel State
+  const aiInitialized = useRef(false);
   const [aiSettings, setAiSettings] = useState<any>(null);
   const [aiLogs, setAiLogs] = useState<any[]>([]);
-  const [aiProvider, setAiProvider] = useState<string>('openai-compatible');
-  const [aiBaseUrl, setAiBaseUrl] = useState<string>('https://api.x.ai/v1');
-  const [aiModel, setAiModel] = useState<string>('grok-2-latest');
+  const [selectedPresetId, setSelectedPresetId] = useState<string>('kerala-sovereign');
+  const [aiProvider, setAiProvider] = useState<string>('kerala-sovereign');
+  const [aiBaseUrl, setAiBaseUrl] = useState<string>('http://localhost:11434/v1');
+  const [aiModel, setAiModel] = useState<string>('kerala-indic-llama-3');
   const [aiEnabled, setAiEnabled] = useState<boolean>(true);
   const [newKey, setNewKey] = useState<string>('');
   const [aiTestResult, setAiTestResult] = useState<{ success: boolean; latency_ms?: number; message?: string } | null>(null);
   const [aiTesting, setAiTesting] = useState(false);
   const [aiSaving, setAiSaving] = useState(false);
   const [aiMsg, setAiMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  const handlePresetSelect = (presetId: string) => {
+    setSelectedPresetId(presetId);
+    const preset = AI_PROVIDER_PRESETS.find((p) => p.id === presetId);
+    if (preset) {
+      setAiProvider(preset.id);
+      setAiBaseUrl(preset.baseUrl);
+      setAiModel(preset.defaultModel);
+    }
+  };
 
   const fetchAll = async () => {
     setLoading(true);
@@ -168,13 +182,18 @@ export default function GovernmentPortal() {
       setSupplyOrders(Array.isArray(sup.orders) ? sup.orders : []);
       setSupplyCounts(sup.counts ?? {});
 
-      // AI Settings
+      // AI Settings (Preserve active user typing on subsequent polls)
       if (ai?.settings) {
         setAiSettings(ai.settings);
-        setAiProvider(ai.settings.provider ?? 'openai-compatible');
-        setAiBaseUrl(ai.settings.baseUrl ?? 'https://api.x.ai/v1');
-        setAiModel(ai.settings.model ?? 'grok-2-latest');
-        setAiEnabled(ai.settings.enabled ?? true);
+        if (!aiInitialized.current) {
+          const prov = ai.settings.provider ?? 'kerala-sovereign';
+          setAiProvider(prov);
+          setSelectedPresetId(prov);
+          setAiBaseUrl(ai.settings.baseUrl ?? 'http://localhost:11434/v1');
+          setAiModel(ai.settings.model ?? 'kerala-indic-llama-3');
+          setAiEnabled(ai.settings.enabled ?? true);
+          aiInitialized.current = true;
+        }
       }
       setAiLogs(Array.isArray(ai?.logs) ? ai.logs : []);
 
@@ -1094,41 +1113,73 @@ export default function GovernmentPortal() {
                     Model Provider & Endpoint Configuration
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-[var(--ink-soft)] uppercase mb-1">Provider Adapter</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[11px] font-bold text-[var(--ink-soft)] uppercase">
+                          AI Provider Gateway Preset (Top 10 Options)
+                        </label>
+                        <span className="text-[10px] text-[var(--authority)] font-bold">Auto-fills Endpoint & Model</span>
+                      </div>
                       <select
-                        value={aiProvider}
-                        onChange={(e) => setAiProvider(e.target.value)}
-                        className="input text-xs w-full"
+                        value={selectedPresetId}
+                        onChange={(e) => handlePresetSelect(e.target.value)}
+                        className="input text-xs w-full font-bold text-[var(--ink)] bg-white border-[var(--authority)]"
                       >
-                        <option value="openai-compatible">xAI (Grok) / OpenAI Compatible</option>
-                        <option value="anthropic">Anthropic (Claude)</option>
-                        <option value="google">Google DeepMind (Gemini)</option>
-                        <option value="ollama">Ollama / Local Kerala Edge Server</option>
-                        <option value="custom">Custom NIC / State Sovereign Gateway</option>
+                        {AI_PROVIDER_PRESETS.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-[var(--ink-soft)] uppercase mb-1">Model Identifier</label>
-                      <input
-                        type="text"
-                        value={aiModel}
-                        onChange={(e) => setAiModel(e.target.value)}
-                        placeholder="grok-2-latest, gpt-4o, claude-3-5-sonnet"
-                        className="input text-xs w-full font-mono"
-                      />
+                    {/* Kerala Sovereign LLM Highlight Banner */}
+                    {(selectedPresetId === 'kerala-sovereign' || aiProvider.includes('kerala')) && (
+                      <div className="p-3 rounded-lg bg-[#EAF1E5] border-2 border-[var(--authority)] flex items-start gap-2.5 text-xs text-[var(--authority-deep)]">
+                        <Sparkles className="w-4 h-4 shrink-0 text-[var(--authority)] mt-0.5" />
+                        <div>
+                          <span className="font-bold text-[var(--authority)] uppercase tracking-wider text-[10px] block">
+                            🌟 Kerala Sovereign Indic LLM Deployment Active
+                          </span>
+                          <span className="text-[11px] text-[var(--ink)] leading-relaxed">
+                            On-premise sovereign execution at Kerala State Data Centre / Digital University Kerala. Citizen ration cards, biometric logs, and audit data never leave Kerala state servers. Zero external token fees.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-[var(--ink-soft)] uppercase mb-1">Provider Adapter Identifier</label>
+                        <input
+                          type="text"
+                          value={aiProvider}
+                          onChange={(e) => setAiProvider(e.target.value)}
+                          className="input text-xs w-full font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-[var(--ink-soft)] uppercase mb-1">Model Identifier</label>
+                        <input
+                          type="text"
+                          value={aiModel}
+                          onChange={(e) => setAiModel(e.target.value)}
+                          placeholder="grok-2-latest, meta-llama/llama-3.3-70b-instruct, claude-3-5-sonnet"
+                          className="input text-xs w-full font-mono font-bold"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-[var(--ink-soft)] uppercase mb-1">API Base URL</label>
+                    <label className="block text-[11px] font-bold text-[var(--ink-soft)] uppercase mb-1">API Base URL (OpenAI / OpenRouter Compatible)</label>
                     <input
                       type="text"
                       value={aiBaseUrl}
                       onChange={(e) => setAiBaseUrl(e.target.value)}
-                      placeholder="https://api.x.ai/v1 or https://api.openai.com/v1"
+                      placeholder="https://openrouter.ai/api/v1 or https://api.x.ai/v1"
                       className="input text-xs w-full font-mono"
                     />
                   </div>
@@ -1271,40 +1322,88 @@ export default function GovernmentPortal() {
                   No SMS dispatched yet. Process a sale in the Seller portal to see fan-out.
                 </div>
               ) : (
-                smsOutbox.slice(0, 12).map((sms) => (
-                  <div
-                    key={sms.id}
-                    className="p-3 rounded-lg bg-[var(--canvas)] border border-[var(--rule)] text-sm space-y-1"
-                  >
-                    <div className="flex items-center justify-between text-[11px] tabular-nums">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[var(--ink-soft)]">{sms.card_id}</span>
-                        <span className="text-[var(--success)] font-bold">{sms.phone_number}</span>
-                        {sms.kind && (
-                          <span
-                            className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
-                              sms.kind === 'sale'
-                                ? 'bg-[#E6F0DD] text-[var(--success)] border border-[#B7CFB7]'
-                                : sms.kind === 'arrival'
-                                  ? 'bg-[#EAF1E5] text-[var(--authority)] border border-[#B7CFB7]'
-                                  : 'bg-[#F1D9CF] text-[var(--danger)] border border-[#D89F8B]'
-                            }`}
-                          >
-                            {sms.kind}
+                (() => {
+                  const groupedMap = new Map<string, {
+                    card_id: string;
+                    message: string;
+                    sent_at: string;
+                    kind?: string;
+                    phones: string[];
+                  }>();
+
+                  for (const sms of smsOutbox) {
+                    const key = `${sms.card_id}::${sms.message}`;
+                    if (!groupedMap.has(key)) {
+                      groupedMap.set(key, {
+                        card_id: sms.card_id,
+                        message: sms.message,
+                        sent_at: sms.sent_at,
+                        kind: sms.kind,
+                        phones: [sms.phone_number],
+                      });
+                    } else {
+                      const entry = groupedMap.get(key)!;
+                      if (!entry.phones.includes(sms.phone_number)) {
+                        entry.phones.push(sms.phone_number);
+                      }
+                    }
+                  }
+
+                  const groupedList = Array.from(groupedMap.values());
+
+                  return groupedList.slice(0, 10).map((group, idx) => (
+                    <div
+                      key={`${group.card_id}-${idx}`}
+                      className="p-3.5 rounded-xl bg-[var(--canvas)] border border-[var(--rule)] text-sm space-y-2"
+                    >
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-bold text-[var(--ink)] bg-white px-2 py-0.5 rounded border border-[var(--rule)]">
+                            {group.card_id}
                           </span>
-                        )}
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E6F0DD] text-[var(--success)] border border-[#B7CFB7]">
+                            {group.phones.length} Family Devices Alerted
+                          </span>
+                          {group.kind && (
+                            <span
+                              className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
+                                group.kind === 'sale'
+                                  ? 'bg-[#E6F0DD] text-[var(--success)] border border-[#B7CFB7]'
+                                  : group.kind === 'arrival'
+                                    ? 'bg-[#EAF1E5] text-[var(--authority)] border border-[#B7CFB7]'
+                                    : 'bg-[#F1D9CF] text-[var(--danger)] border border-[#D89F8B]'
+                              }`}
+                            >
+                              {group.kind}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-[var(--ink-soft)] font-mono">
+                          {new Date(group.sent_at).toLocaleTimeString('en-GB')}
+                        </span>
                       </div>
-                      <span className="text-[var(--ink-soft)]">
-                        {new Date(sms.sent_at).toLocaleTimeString('en-GB')}
-                      </span>
+
+                      <p className="text-[var(--ink)] text-xs leading-relaxed font-medium bg-white p-2.5 rounded-lg border border-[var(--rule)]">
+                        &quot;{group.message}&quot;
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                        <span className="text-[10px] uppercase font-bold text-[var(--ink-soft)] mr-1">
+                          Delivered to:
+                        </span>
+                        {group.phones.map((phone) => (
+                          <span
+                            key={phone}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-white text-[var(--authority)] border border-[var(--rule)]"
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-[var(--success)]" />
+                            {phone}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-[var(--ink)] text-sm leading-relaxed">&quot;{sms.message}&quot;</p>
-                    <div className="text-[10px] text-[var(--ink-soft)] flex items-center gap-2 pt-0.5">
-                      <span>DLT Header: GOVKER-PDS</span>
-                      <span>· Status: Delivered to Family Device</span>
-                    </div>
-                  </div>
-                ))
+                  ));
+                })()
               )}
             </div>
           </div>

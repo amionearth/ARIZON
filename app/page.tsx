@@ -15,6 +15,7 @@ import {
   TrendingUp,
   FileText,
   Languages,
+  Sparkles,
 } from 'lucide-react';
 import { Language, makeT } from '@/lib/translations';
 
@@ -198,6 +199,36 @@ export default function HomePage() {
               </Link>
               <Link href="/gov" className="btn-secondary">
                 {lang === 'ml' ? 'സർക്കാർ ഡാഷ്ബോർഡ്' : 'Government Dashboard'}
+              </Link>
+            </div>
+
+            {/* Sovereign Kerala AI Direct Banner */}
+            <div className="mt-8 p-4 sm:p-5 rounded-xl bg-[#EAF1E5] border-2 border-[var(--authority)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-lg bg-[var(--authority)] text-white flex items-center justify-center font-bold shrink-0 shadow-sm">
+                  <Sparkles className="w-5 h-5 text-amber-300" />
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-black uppercase tracking-wider text-[var(--authority)]">
+                      {lang === 'ml' ? 'കേരള സോവറിൻ AI ഗേറ്റ്‌വേ' : 'Kerala Sovereign AI & Open LLM Gateway'}
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      {lang === 'ml' ? 'പ്രാദേശിക LLM തയ്യാർ' : 'Kerala Indic LLM Ready'}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-[var(--ink)] mt-1.5 font-medium leading-relaxed max-w-4xl">
+                    {lang === 'ml'
+                      ? '“കേരളം അത്യാധുനിക AI സാങ്കേതികവിദ്യയിലേക്ക് മുന്നേറുമ്പോൾ, പൗരന്മാരുടെ ഡാറ്റാ സുരക്ഷയും മലയാള ഭാഷാ കൃത്യതയും പൂർണ്ണ നിയന്ത്രണവും ഉറപ്പാക്കാൻ കേരളാ അധിഷ്ഠിത പ്രാദേശിക Indic LLM-കളും (Digital University Kerala / C-DAC) അന്താരാഷ്ട്ര ഓപ്പൺ മോഡലുകളും (OpenRouter) AriZon-ൽ നേരിട്ട് പ്രവർത്തിപ്പിക്കാം.”'
+                      : '“As Kerala leads the nation into cutting-edge technology and ethical AI governance, the Government of Kerala can deploy Kerala-based local sovereign Indic LLMs (Digital University Kerala / C-DAC) alongside OpenRouter multi-model gateways to power AriZon with ironclad citizen data privacy, native Malayalam fluency, and total technological control.”'}
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/gov"
+                className="text-xs font-bold text-[var(--authority)] hover:underline shrink-0 flex items-center gap-1 bg-white px-3 py-1.5 rounded-lg border border-[var(--authority)]"
+              >
+                {lang === 'ml' ? 'AI ക്രമീകരണങ്ങൾ' : 'AI Gateway Panel'} →
               </Link>
             </div>
           </div>

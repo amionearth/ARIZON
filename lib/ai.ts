@@ -13,6 +13,10 @@ export function getActiveAI() {
   const provider = createOpenAI({
     apiKey: s.apiKey,
     baseURL: s.baseUrl,
+    headers: {
+      'HTTP-Referer': 'https://arizon.kerala.gov.in',
+      'X-Title': 'AriZon Smart PDS Kerala',
+    },
   });
   return {
     provider,

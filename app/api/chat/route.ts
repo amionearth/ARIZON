@@ -20,13 +20,24 @@ export async function POST(req: Request) {
     const ai = getActiveAI();
     const lastMsg = messages[messages.length - 1]?.content ?? '';
 
+    // Universal pre-prompt tagging on input message
+    const taggedMessages = messages.map((m: any, idx: number) => {
+      if (idx === messages.length - 1 && m.role === 'user') {
+        return {
+          ...m,
+          content: `[ARIZON PRE-PROMPT: Role=${validRole.toUpperCase()} | Scope=${shopId ?? 'Statewide'} | Period=2026-09 | Lang=${lang}]\n${m.content}`,
+        };
+      }
+      return m;
+    });
+
     if (ai.enabled) {
       const start = Date.now();
       try {
         const result: any = streamText({
           model: ai.provider(ai.model) as any,
           system: systemPrompt,
-          messages,
+          messages: taggedMessages,
           tools,
           maxSteps: 5,
         });
@@ -103,21 +114,29 @@ export async function POST(req: Request) {
 function buildSystemPrompt(role: Role, shopId?: string, lang = 'en'): string {
   const langNote =
     lang === 'ml' ? 'Respond in Malayalam (മലയാളം) script when the user writes in Malayalam.' : '';
-  const base = `You are the Arizon AI Agent — the central AI assistant for Kerala's Public Distribution System. ${langNote}
-You help ${role}s with their specific needs. Be concise, accurate, and helpful.
-Current date: September 2026. Default period: 2026-09.
-Always use tool calls to fetch real data before answering stock questions.
-You are vendor-neutral — you do not represent or mention any specific AI provider by name.`;
+  const commoditiesList = store.commodities.map((c) => `${c.name} (${c.id})`).join(', ');
+  const flaggedShops = store.getAllAnomalies('2026-09').filter((a) => a.is_flagged);
 
-  const roleContext: Record<Role, string> = {
-    customer:
-      'You help ration cardholders find nearby shops with available stock, subscribe to arrival alerts, and understand their entitlements.',
-    seller: `You help the Fair Price Shop dealer at ${shopId ?? 'their shop'} manage stock, log deliveries, process sales, and understand their ledger.`,
-    supplier:
-      'You help Taluk Supply Officers optimize stock allocation, view demand forecasts, and plan dispatches efficiently.',
-    gov: 'You provide the Civil Supplies Directorate with state-wide oversight, anomaly detection, reconciliation analysis, and executive audit reports.',
-  };
-  return `${base}\n${roleContext[role]}`;
+  return `[=== ARIZON UNIVERSAL SOVEREIGN GROUND-TRUTH PRE-PROMPT ===]
+[SYSTEM JURISDICTION]: Government of Kerala — Department of Civil Supplies & Consumer Affairs.
+[TEMPORAL ANCHOR]: September 2026 (Monthly Ledger Period: 2026-09).
+[STAKEHOLDER ACTOR]: ${role.toUpperCase()}
+[FOCAL SCOPE]: ${shopId ? `Fair Price Shop ${shopId}` : 'Statewide Kerala aePDS'}
+[LANGUAGE PROFILE]: ${lang === 'ml' ? 'Malayalam (മലയാളം)' : 'English / Bilingual'}
+[CORE DIRECTIVE]: You are the AriZon AI Agent powered by Kerala's Sovereign Multi-Model Gateway. You enforce zero-leakage transparency, accurate stock reporting, and anti-diversion monitoring. ${langNote}
+[GROUND TRUTH DATABASE STATE]:
+- Fair Price Shops Monitored: 6 active shops (Kaloor FPS #402, Fort Kochi FPS #114, Palarivattom FPS #308, Kazhakkoottam FPS #012, Aluva FPS #501, Thrippunithura FPS #215).
+- Official Ration Commodities: ${commoditiesList}.
+- Anti-Leakage Flags: ${flaggedShops.length} flagged shops (Shop #402 Kaloor under investigation for 15% scale weight discrepancy).
+- 3-Tier Supply Chain: State Directives -> TSO Godown Approval & Dispatch -> FPS Dealer Scale Weighing -> Department Inspector Sign-Off.
+- Multi-Member Household SMS: Every sale/delivery sends automated alerts to ALL Aadhaar-linked family members on the ration card.
+[ROLE OPERATING BOUNDS]:
+- Customer: Help cardholders locate stock, subscribe to "Notify Me" arrival alerts, verify entitlements.
+- Seller: Assist FPS dealers with electronic scale receipt, e-POS biometric sales, ledger reconciliation, burn rates.
+- Supplier: Guide Taluk Supply Officers in godown dispatch planning, AI optimization vectors, festival surge quotas.
+- Gov: Deliver state-wide audit summaries, multi-signal trust scores (S1 scale weight, S2 citizen confirmation, S3 biometric velocity), reconciliation matrices.
+[INSTRUCTION]: Always use tool calls to fetch real data before answering stock questions. Never hallucinate stock. Always maintain consistency with this ground-truth state.
+[=== END UNIVERSAL PRE-PROMPT ===]`;
 }
 
 async function handleLocalQuery(

@@ -6,7 +6,7 @@
 // DELETE — disable AI entirely
 
 import { NextRequest } from 'next/server';
-import { aiControl } from '@/lib/ai-control';
+import { aiControl, AI_PROVIDER_PRESETS } from '@/lib/ai-control';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +15,7 @@ export async function GET() {
   return Response.json({
     settings: { ...s, apiKey: aiControl.maskKey(s.apiKey) },
     rawKeyLength: s.apiKey.length,
+    presets: AI_PROVIDER_PRESETS,
     logs: aiControl.getLogs(),
   });
 }
@@ -49,6 +50,8 @@ export async function POST(req: NextRequest) {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${settings.apiKey}`,
+            'HTTP-Referer': 'https://arizon.kerala.gov.in',
+            'X-Title': 'AriZon Smart PDS Kerala',
           },
           body: JSON.stringify({
             model: settings.model,

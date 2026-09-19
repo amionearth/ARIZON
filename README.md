@@ -6,6 +6,26 @@
 
 > **Know the stock before you travel. Track the supply. Verify the transaction.**
 
+---
+
+### 🏛️ Kerala Sovereign AI & Digital Governance Pioneer
+> *"As Kerala surges ahead as a national pioneer in cutting-edge tech and digital public infrastructure, the Kerala Government can deploy **Kerala-based Local Sovereign Indic LLMs** (C-DAC / Digital University Kerala) to power AriZon — ensuring maximum data sovereignty, citizen privacy, zero leakage of sensitive PDS distribution telemetry outside state boundaries, and native Malayalam fluency."*
+
+AriZon features a **Pluggable Multi-Provider AI Gateway** in the Government Portal (`/gov`), allowing civil supplies officers to switch between **10+ AI Providers** in real-time without restarting or redeploying:
+1. **Kerala Sovereign Indic LLM (Local Edge)** — State-hosted air-gapped sovereign inference (`localhost:11434 / vLLM`)
+2. **OpenRouter (Universal Router)** — Access to 100+ models with universal routing
+3. **xAI (Grok 2 / Grok Vision)** — Fast multi-modal reasoning
+4. **DeepSeek (V3 / R1 Reasoning)** — Ultra-low-cost high-performance reasoning
+5. **OpenAI (GPT-4o / GPT-4o-mini)** — Industry standard function calling
+6. **Anthropic (Claude 3.5 Sonnet)** — Strict enterprise-grade alignment
+7. **Groq (Llama 3.3 70B Versatile)** — Sub-second ultra-low latency inference
+8. **Google Gemini (2.0 Flash)** — High-context multi-lingual processing
+9. **Together AI (Llama 3.3 70B Turbo)** — High-throughput open-weights hosting
+10. **Ollama (Self-Hosted Local)** — Zero-cloud privacy for field taluk offices
+11. **Custom State Gateway** — Dedicated State Data Centre endpoints
+
+---
+
 AriZon is an **AI-assisted Smart PDS platform** designed to improve ration-shop stock visibility, supply-chain tracking, transparency, and citizen access.
 
 Instead of treating ration-shop stock as a single number, AriZon connects the flow:
@@ -508,6 +528,43 @@ Inspect anomalies
  ↓
 Control AI configuration
 ```
+
+---
+
+# Quickstart & Vercel Deployment
+
+### 1. Local Development
+```bash
+# Clone the repository
+git clone https://github.com/your-username/ARIZON.git
+cd ARIZON
+
+# Install dependencies
+npm install
+
+# Start local development server
+npm run dev
+# Open http://localhost:3000 in your browser
+```
+
+### 2. Deploy to Vercel in 60 Seconds
+AriZon is built on **Next.js 16 (App Router)** and is 100% cloud-ready for instant Vercel deployment:
+
+1. **Push to GitHub**: Commit your changes and push the repo to GitHub.
+2. **Import into Vercel**:
+   - Go to [vercel.com](https://vercel.com) and click **"Add New Project"**.
+   - Select your GitHub repository.
+   - **Root Directory**: If your repository has `ARIZON` as a subfolder, set Root Directory to `ARIZON`. If `ARIZON` is the repo root, leave it as `./`.
+   - **Framework Preset**: `Next.js` (automatically detected).
+3. **Environment Variables (Optional for demo/hackathon)**:
+   - AriZon includes a resilient **Zero-Setup Mock Database and In-Memory Store** that boots automatically without external dependencies!
+   - If you want persistent Supabase cloud storage:
+     - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase Project URL
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anon Public Key
+   - If you want pre-configured AI (can also be entered live via the `/gov` AI Control Panel):
+     - `GROK_API_KEY` or `OPENROUTER_API_KEY`: Your API key
+     - `AI_GATEWAY_PROVIDER`: `openrouter` (or `xai`, `deepseek`, etc.)
+4. **Deploy**: Click **Deploy**. Vercel will build and output your live production URL in under 2 minutes!
 
 ---
 
