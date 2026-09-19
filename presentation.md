@@ -153,17 +153,6 @@ SUBTITLE: 10+ Pluggable LLM Backends with Local Indic Edge Hosting
 BULLETS:
 • Data Sovereignty First: Sensitive PDS beneficiary data and biometric transaction logs must never leave state borders.
 • Kerala Sovereign Indic LLM: Direct integration with state-hosted local edge inference (Ollama / vLLM / C-DAC Malayalam models).
-• Top 10 Pluggable Providers:
-  1. Kerala Sovereign Indic LLM (Local)
-  2. OpenRouter (Universal Gateway)
-  3. xAI (Grok 2 / Vision)
-  4. DeepSeek (V3 / R1)
-  5. OpenAI (GPT-4o)
-  6. Anthropic (Claude 3.5 Sonnet)
-  7. Groq (Ultra-low latency Llama 3.3)
-  8. Google Gemini (2.0 Flash)
-  9. Together AI
-  10. Local Field Office Edge (Ollama)
 • Zero-Downtime Hot-Swapping: Switch models and keys live from the Government UI without restarting servers.
 
 SPEAKER NOTES (45 Seconds):

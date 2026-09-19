@@ -11,19 +11,7 @@
 ### 🏛️ Kerala Sovereign AI & Digital Governance Pioneer
 > *"As Kerala surges ahead as a national pioneer in cutting-edge tech and digital public infrastructure, the Kerala Government can deploy **Kerala-based Local Sovereign Indic LLMs** (C-DAC / Digital University Kerala) to power AriZon — ensuring maximum data sovereignty, citizen privacy, zero leakage of sensitive PDS distribution telemetry outside state boundaries, and native Malayalam fluency."*
 
-AriZon features a **Pluggable Multi-Provider AI Gateway** in the Government Portal (`/gov`), allowing civil supplies officers to switch between **10+ AI Providers** in real-time without restarting or redeploying:
-1. **Kerala Sovereign Indic LLM (Local Edge)** — State-hosted air-gapped sovereign inference (`localhost:11434 / vLLM`)
-2. **OpenRouter (Universal Router)** — Access to 100+ models with universal routing
-3. **xAI (Grok 2 / Grok Vision)** — Fast multi-modal reasoning
-4. **DeepSeek (V3 / R1 Reasoning)** — Ultra-low-cost high-performance reasoning
-5. **OpenAI (GPT-4o / GPT-4o-mini)** — Industry standard function calling
-6. **Anthropic (Claude 3.5 Sonnet)** — Strict enterprise-grade alignment
-7. **Groq (Llama 3.3 70B Versatile)** — Sub-second ultra-low latency inference
-8. **Google Gemini (2.0 Flash)** — High-context multi-lingual processing
-9. **Together AI (Llama 3.3 70B Turbo)** — High-throughput open-weights hosting
-10. **Ollama (Self-Hosted Local)** — Zero-cloud privacy for field taluk offices
-11. **Custom State Gateway** — Dedicated State Data Centre endpoints
-
+AriZon features a **Pluggable Multi-Provider AI Gateway** in the Government Portal (`/gov`), allowing civil supplies officers to switch between **10+ AI Providers** in 
 ---
 
 AriZon is an **AI-assisted Smart PDS platform** designed to improve ration-shop stock visibility, supply-chain tracking, transparency, and citizen access.
