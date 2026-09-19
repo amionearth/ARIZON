@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Search,
   MapPin,
@@ -18,11 +18,18 @@ import {
   PackageCheck,
   MessageSquare,
   FileText,
+  RefreshCw,
+  BellRing,
+  Sparkles,
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { StockBadge } from '@/components/StockBadge';
 import { AgentChat } from '@/components/AgentChat';
 import MobileTabBar, { TabSection } from '@/components/MobileTabBar';
+import { Toaster, pushToast } from '@/components/Toaster';
+import { SkeletonCard, SkeletonRow } from '@/components/Skeleton';
+import { LiveBadge } from '@/components/LiveBadge';
+import { StickyActionBar } from '@/components/StickyActionBar';
 import { useAutoRefresh } from '@/components/useAutoRefresh';
 import { Language, makeT } from '@/lib/translations';
 import { getSessionCardId, logout } from '@/app/actions/auth';
