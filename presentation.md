@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-Kerala’s Public Distribution System (PDS) provides food security to over **3.5 crore citizens across 14,000+ Fair Price Shops (ARVs)**. However, the last mile remains opaque: citizens travel miles only to find essential commodities like boiled rice, wheat, or sugar out of stock. Meanwhile, taluk supply officers lack real-time visibility into transit shortages, weighbridge discrepancies, and dealer hoardings.
+Kerala’s Public Distribution System (PDS) serves **95.95 lakh registered ration cards through 13,925 mapped Fair Price Shops** (AePDS, September 2026). However, the last mile remains opaque: citizens travel miles only to find essential commodities like boiled rice, wheat, or sugar out of stock. Meanwhile, taluk supply officers lack real-time visibility into transit shortages, weighbridge discrepancies, and dealer hoardings.
 
 **AriZon** solves this with a **Single AI-Agent Driven Architecture** connecting four stakeholder portals (`/customer`, `/seller`, `/supplier`, `/gov`) over one synchronized ground-truth ledger. By coupling an **Autonomous Reconciler**, **Multi-Signal Trust Engine**, **Omnichannel SMS Fan-out**, and a **Pluggable Sovereign Indic AI Gateway** (supporting Kerala-hosted local LLMs for full data sovereignty), AriZon transforms the PDS from a static quota ledger into an intelligent, transparent public utility.
 
@@ -73,6 +73,7 @@ BULLETS:
   3. Taluk Supplier (/supplier): 3-Tier supply chain dispatch, weighbridge tolerance checking.
   4. Government (/gov): Live anomaly detection, automated reconciliation, multi-model AI control.
 • Live Ground-Truth Pre-Prompting: Every AI inference query is injected with exact database facts, eliminating hallucinations.
+• Trust Engine: Explainable S1 scale variance, S2 citizen confirmation, and S3 biometric velocity signals support targeted review.
 
 DIAGRAM FLOW:
 [State Warehouses / Taluk Offices]
@@ -116,7 +117,7 @@ SUBTITLE: Eliminating Inwarding Disputes with Digital Proof of Delivery
 
 BULLETS:
 • Inward Delivery Inspection: Dealers compare dispatched weight vs. received scale weight with instant tolerance checks.
-• Multi-Signal Trust Engine: Computes a dynamic 0-100 Trust Score based on transaction consistency, report frequency, and anomaly flags.
+• Three named trust signals: **S1** scale-weight variance, **S2** citizen confirmation ratio, and **S3** biometric transaction velocity combine into an explainable trust score.
 • Real-Time POS Simulator: Record sales to specific ration cards with auto-quota deduction and balance calculation.
 • Offline-Resilient & Excel Import: Upload monthly stock sheets directly via Excel/CSV parser when internet connectivity fluctuates.
 
@@ -133,7 +134,7 @@ TITLE: End-to-End Grain Movement
 SUBTITLE: From State Granaries (FCI) to Taluk Godowns to FPS Doorstep
 
 BULLETS:
-• Three-Tier Supply Pipeline: State Godown Allocation ➔ Taluk Godown Inwarding ➔ FPS Delivery Dispatch.
+• Three-Tier Supply Pipeline: Government allocation ➔ Supplier approval and dispatch ➔ FPS receipt, weighing, and inspector sign-off.
 • Truck & Consignment Tracking: Capture Vehicle Number, Driver Contact, Waybill ID, and Net Weight.
 • Weighbridge Reconciliation: Auto-detects transit leakage between state dispatch and taluk weighment.
 • Taluk Officer Approvals: Strict two-man rule for approving anomalous deliveries or quota redistributions.
@@ -175,7 +176,7 @@ BULLETS:
 • Family-Grouped SMS Audit: Grouping SMS dispatches by Ration Card ID proves zero wasted telecom spend and eliminates duplicate notifications.
 • Massive State ROI:
   - 85% reduction in wasted citizen trips.
-  - Estimated ₹18+ Crore annual savings in unaccounted transit diversion across Kerala.
+  - Earlier detection of the documented **28% national diversion problem**; no unsupported Kerala rupee saving is claimed.
   - 100% audit readiness for National Food Security Act (NFSA) compliances.
 
 SPEAKER NOTES (45 Seconds):

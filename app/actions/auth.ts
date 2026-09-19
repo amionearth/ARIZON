@@ -24,12 +24,12 @@ export async function requestOTP(cardId: string, phone: string) {
   }
 }
 
-export async function verifyOTP(cardId: string, otp: string, role: string = 'customer') {
+export async function verifyOTP(cardId: string, otp: string) {
   if (otp !== '1234') {
     return { success: false, error: 'Invalid OTP. For demo use 1234.' };
   }
   const cookieStore = await cookies();
-  cookieStore.set('pds_session', JSON.stringify({ cardId, role }), {
+  cookieStore.set('pds_session', JSON.stringify({ cardId, role: 'customer' }), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',

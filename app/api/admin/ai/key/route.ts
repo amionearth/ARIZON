@@ -4,20 +4,24 @@
 
 import { NextRequest } from 'next/server';
 import { aiControl } from '@/lib/ai-control';
+import { requireGovernmentSession } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
+  const denied = await requireGovernmentSession();
+  if (denied) return denied;
   try {
     const { apiKey, actor } = await req.json();
     if (typeof apiKey !== 'string') {
       return Response.json({ error: 'apiKey must be a string' }, { status: 400 });
     }
     const settings = aiControl.updateSettings({ apiKey: apiKey.trim() }, actor ?? 'gov');
+    const { apiKey: _apiKey, ...publicSettings } = settings;
     return Response.json({
       success: true,
-      settings: { ...settings, apiKey: aiControl.maskKey(settings.apiKey) },
-      keyLength: settings.apiKey.length,
+      settings: publicSettings,
+      hasApiKey: Boolean(settings.apiKey),
     });
   } catch (e) {
     return Response.json({ error: String(e) }, { status: 500 });
@@ -25,10 +29,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE() {
+  const denied = await requireGovernmentSession();
+  if (denied) return denied;
   const settings = aiControl.updateSettings({ apiKey: '' }, 'gov');
+  const { apiKey: _apiKey, ...publicSettings } = settings;
   return Response.json({
     success: true,
     cleared: true,
-    settings: { ...settings, apiKey: '' },
+    settings: publicSettings,
+    hasApiKey: false,
   });
 }

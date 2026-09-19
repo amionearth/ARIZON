@@ -9,10 +9,10 @@
 ## 1. Executive Summary & The Governance Problem It Solves
 
 ### The Ground Truth in Kerala
-- **14,200+ Fair Price Shops (Ration Shops / FPS)** across 14 districts in Kerala serve over **85 lakh ration cardholder households**.
+- **13,925 mapped Fair Price Shops (FPS)** across Kerala serve **95.95 lakh registered ration cards** (AePDS, September 2026).
 - Since 2018, shops operate biometric **e-POS (Electronic Point of Sale)** machines linked to `epos.kerala.gov.in`.
 - The State Government is actively integrating e-POS machines with **e-Balance digital weighing scales** to electronically capture physically delivered and dispensed weights.
-- Despite high technological adoption, **national PDS grain diversion historically reached 40%–50%**, with state audits indicating that approximately **28% of allocated foodgrains fail to reach genuine beneficiaries**.
+- Despite high technological adoption, national research has reported substantial PDS diversion; AriZon uses the defensible **28% national diversion figure** as a problem-context estimate rather than claiming a Kerala-specific loss.
 - Biometric authentication alone cannot eliminate diversion because:
   1. **Single-Token Vulnerability**: An unsuspecting family member's biometric authentication can be misused for unreceived commodities.
   2. **Warehouse-to-Shop Transit Siphoning**: Diverted grain leaves the taluk godown but is siphoned before reaching the shop scale.
@@ -25,7 +25,7 @@ Instead of developing four isolated, hardcoded admin panels, **AriZon places a s
 The platform provides:
 1. **Live SKU-Level Stock Visibility**: Citizens verify live grain inventory, opening/received/sold metrics, and distance before leaving home.
 2. **Citizen Stockout Subscriptions ("Notify Me")**: Households register interest for out-of-stock items; the platform logs unfulfilled demand and automatically broadcasts SMS alerts to all registered family members the second grain is weighed on the shop's e-Balance scale.
-3. **Multi-Member Household SMS Broadcast**: Every purchase or delivery triggers an automated SMS alert to **every Aadhaar-linked family member registered on the ration card**, turning 85 lakh families into anti-diversion inspectors.
+3. **Multi-Member Household SMS Broadcast**: Every purchase or delivery triggers an automated SMS alert to **every registered family member on the ration card**, turning households into anti-diversion inspectors.
 4. **3-Tier Supply Chain Approval Pipeline**:
    - **Tier 1 (Gov)**: Issues state allocation directives with rationale and target quotas.
    - **Tier 2 (TSO / Supplier)**: Reviews directive, allocates godown inventory, approves, and marks in transit.
@@ -231,8 +231,8 @@ The central AI agent dynamically validates the caller's role before executing an
 
 | Traditional PDS Problem in Kerala | The AriZon Revolution | Governance Impact |
 | :--- | :--- | :--- |
-| **Silent Biometric Misuse** | Multi-member household SMS broadcasting alerts all family members simultaneously. | 85 lakh families become decentralized anti-diversion watchdogs. |
-| **Transit Siphoning** | 3-tier approval with e-Balance scale verification flags discrepancies $>5\%$. | Plugs the estimated ₹350+ Cr annual diversion leakage. |
+| **Silent Biometric Misuse** | Multi-member household SMS broadcasting alerts all registered family members simultaneously. | 95.95 lakh registered cards gain a household-level audit trail. |
+| **Transit Siphoning** | 3-tier approval with e-Balance scale verification flags discrepancies $>5\%$. | Targets the documented 28% national diversion problem with earlier evidence. |
 | **Futile Travel for Low-Income Citizens** | Real-time stock status + "Notify Me" arrival SMS. | Saves an estimated 4-6 hours of travel and lost daily wages per household per month. |
 | **Manual Book Reconciliations** | Automated monthly mathematical roll-forward ($Opening_{M+1} \equiv Closing_M$). | Eliminates book manipulation and retrospective register doctoring. |
 | **Vendor Lock-in for State AI** | Pluggable Government AI Control Panel supporting Grok, Gemini, Claude, and sovereign on-premise models. | Total technological sovereignty for Kerala State IT Mission & NIC. |

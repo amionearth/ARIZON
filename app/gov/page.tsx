@@ -184,7 +184,7 @@ export default function GovernmentPortal() {
 
       // AI Settings (Preserve active user typing on subsequent polls)
       if (ai?.settings) {
-        setAiSettings(ai.settings);
+        setAiSettings({ ...ai.settings, hasApiKey: Boolean(ai.hasApiKey) });
         if (!aiInitialized.current) {
           const prov = ai.settings.provider ?? 'kerala-sovereign';
           setAiProvider(prov);
@@ -1187,7 +1187,7 @@ export default function GovernmentPortal() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-[11px] font-bold text-[var(--ink-soft)] uppercase">
-                        Active Key: <span className="font-mono text-[var(--ink)]">{aiSettings?.apiKey ? aiSettings.apiKey : 'None Set (Fallback Active)'}</span>
+                        API key: <span className="font-mono text-[var(--ink)]">{aiSettings?.hasApiKey ? 'Configured (hidden)' : 'None set (fallback active)'}</span>
                       </label>
                       <span className="text-[10px] text-[var(--ink-soft)]">Input below to rotate</span>
                     </div>
